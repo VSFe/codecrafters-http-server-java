@@ -73,7 +73,9 @@ public class HttpConnectionUtil {
 				return HttpResponse.basicOf(HttpStatus.OK);
 			} else if (request.location().startsWith("/echo/")) {
 				var body = request.location().substring(request.location().indexOf("/echo/") + 6);
-
+				return HttpResponse.basicOf(HttpStatus.OK, body);
+			} else if (request.location().equals("/user-agent")) {
+				var body = request.headers().get("User-Agent");
 				return HttpResponse.basicOf(HttpStatus.OK, body);
 			} else {
 				return HttpResponse.basicOf(HttpStatus.NOT_FOUND);
