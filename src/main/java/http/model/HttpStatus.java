@@ -2,7 +2,9 @@ package http.model;
 
 public enum HttpStatus {
 	// 200
-	OK("200", "OK");
+	OK("200", "OK"),
+	// 400
+	NOT_FOUND("404", "NOT FOUND");
 
 	private final String httpStatusCode;
 	private final String message;
