@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import http.HttpRequest;
 import http.HttpResponse;
@@ -15,6 +16,7 @@ import http.model.HttpMethod;
 import http.model.HttpStatus;
 
 public class HttpConnectionUtil {
+	private static final Logger LOGGER = Logger.getLogger(HttpConnectionUtil.class.getSimpleName());
 	private HttpConnectionUtil() {
 
 	}
@@ -54,7 +56,7 @@ public class HttpConnectionUtil {
 			}
 			var response = parseRequestAndCreateResponse(request);
 
-			writer.write(response);
+			writer.write(response.createHttpResponseMessage());
 		} catch (IOException e) {
 			throw new RuntimeException(String.format("IOException: %s%n", e.getMessage()));
 		}
@@ -65,11 +67,20 @@ public class HttpConnectionUtil {
 		return new HttpRequest(HttpMethod.valueOf(info[0]), info[1], info[2], new HashMap<>());
 	}
 
-	private static String parseRequestAndCreateResponse(HttpRequest request) {
-		if ("/".equals(request.location())) {
-			return new HttpResponse("HTTP/1.1", HttpStatus.OK).createHttpResponseMessage();
-		} else {
-			return new HttpResponse("HTTP/1.1", HttpStatus.NOT_FOUND).createHttpResponseMessage();
+	private static HttpResponse parseRequestAndCreateResponse(HttpRequest request) {
+		try {
+			if ("/".equals(request.location())) {
+				return HttpResponse.basicOf(HttpStatus.OK);
+			} else if (request.location().startsWith("/echo/")) {
+				var body = request.location().substring(request.location().indexOf("/echo/") + 6);
+
+				return HttpResponse.basicOf(HttpStatus.OK, body);
+			} else {
+				return HttpResponse.basicOf(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			LOGGER.info(String.format("exception: %s%n", e.getMessage()));
+			return HttpResponse.basicOf(HttpStatus.BAD_REQUEST);
 		}
 	}
 }
