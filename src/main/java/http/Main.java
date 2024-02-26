@@ -3,6 +3,7 @@ package http;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import http.connection.HttpConnectionResolver;
 import http.util.HttpConnectionUtil;
 
 public class Main {
@@ -14,7 +15,8 @@ public class Main {
 
 		while (true) {
 			var clientSocket = serverSocket.accept();
-			HttpConnectionUtil.readAndResponseRequest(clientSocket);
+			var httpConnectionResolver = new HttpConnectionResolver(clientSocket);
+			httpConnectionResolver.start();
 			LOGGER.info("accepted new connection");
 		}
 	}
