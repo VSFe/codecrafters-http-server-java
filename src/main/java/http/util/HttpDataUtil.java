@@ -18,7 +18,7 @@ public class HttpDataUtil {
 
 	public static HttpRequest parseBasicHttpRequest(String startLine) {
 		var info = startLine.split(" ");
-		return new HttpRequest(HttpMethod.valueOf(info[0]), info[1], info[2], new HashMap<>());
+		return new HttpRequest(HttpMethod.valueOf(info[0]), info[1], info[2], new HashMap<>(), null);
 	}
 
 	public static HttpResponse parseRequestAndCreateResponse(HttpRequest request) {
@@ -35,8 +35,17 @@ public class HttpDataUtil {
 				return HttpResponse.basicOf(HttpStatus.OK, body);
 			} else if (location.startsWith("/files")) {
 				var fileName = location.substring(location.indexOf("/files/") + 7);
-				var file = FileUtil.readFile(Main.ARGS_MAP.get("directory"), fileName);
-				return HttpResponse.fileOf(file);
+				if (request.httpMethod() == HttpMethod.GET) {
+					var file = FileUtil.readFile(Main.ARGS_MAP.get("directory"), fileName);
+					return HttpResponse.fileOf(file);
+				} else if (request.httpMethod() == HttpMethod.POST) {
+					var file = request.body();
+					FileUtil.writeFile(Main.ARGS_MAP.get("directory"), fileName, file);
+					return HttpResponse.basicOf(HttpStatus.CREATED, null);
+				} else {
+					// TODO: replace 405
+					throw new RuntimeException();
+				}
 			} else {
 				return HttpResponse.basicOf(HttpStatus.NOT_FOUND);
 			}

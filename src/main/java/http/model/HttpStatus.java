@@ -3,6 +3,8 @@ package http.model;
 public enum HttpStatus {
 	// 200
 	OK("200", "OK"),
+	CREATED("201", "CREATED"),
+
 	// 400
 	BAD_REQUEST("400", "BAD REQUEST0"),
 	NOT_FOUND("404", "NOT FOUND");

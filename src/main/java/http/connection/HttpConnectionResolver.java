@@ -8,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.logging.Logger;
 
+import http.HttpRequest;
+import http.model.HttpMethod;
 import http.util.HttpDataUtil;
 
 public class HttpConnectionResolver extends Thread {
@@ -33,8 +35,19 @@ public class HttpConnectionResolver extends Thread {
 				var data = input.split(": ");
 				request.headers().put(data[0], data[1]);
 			}
-			var response = HttpDataUtil.parseRequestAndCreateResponse(request);
 
+			if (request.httpMethod() == HttpMethod.POST) {
+				var size = Integer.parseInt(request.headers().getOrDefault("Content-Length", "0"));
+				var inputStrBuilder = new StringBuilder();
+
+				for (int i = 0; i < size; i++) {
+					inputStrBuilder.append((char)bufferedReader.read());
+				}
+
+				request = HttpRequest.withBody(request, inputStrBuilder.toString());
+			}
+
+			var response = HttpDataUtil.parseRequestAndCreateResponse(request);
 			bufferedWriter.write(response.createHttpResponseMessage());
 		} catch (IOException e) {
 			logger.info(String.format("create I/O stream error: %s", e.getMessage()));
