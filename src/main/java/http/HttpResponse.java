@@ -7,7 +7,6 @@ import java.util.Objects;
 import http.model.HttpStatus;
 
 public record HttpResponse(
-	String httpProtocolVersion,
 	HttpStatus httpStatus,
 	Map<String, String> header,
 	String body
@@ -27,11 +26,23 @@ public record HttpResponse(
 			header.put("Content-Length", String.valueOf(body.length()));
 		}
 
-		return new HttpResponse("HTTP/1.1", httpStatus, header, body);
+		return new HttpResponse(httpStatus, header, body);
+	}
+
+	public static HttpResponse fileOf(byte[] body) {
+		if (body == null) {
+			return new HttpResponse(HttpStatus.NOT_FOUND, Map.of(), null);
+		}
+
+		var header = new HashMap<String, String>();
+		header.put("Content-Type", "application/octet-stream");
+		header.put("Content-Length", String.valueOf(body.length));
+
+		return new HttpResponse(HttpStatus.OK, header, new String(body));
 	}
 
 	public String createHttpResponseMessage() {
-		var strBuilder = new StringBuilder("%s %s %s\r\n".formatted(httpProtocolVersion, httpStatus.getHttpStatusCode(), httpStatus.getMessage()));
+		var strBuilder = new StringBuilder("%s %s %s\r\n".formatted(CommonConstant.DEFAULT_HTTP_VERSION, httpStatus.getHttpStatusCode(), httpStatus.getMessage()));
 
 		for (var headerEntry : header.entrySet()) {
 			strBuilder.append(String.format("%s: %s\r\n", headerEntry.getKey(), headerEntry.getValue()));

@@ -5,4 +5,5 @@ public class CommonConstant {
 	}
 
 	public static final int DEFAULT_PORT = 4221;
+	public static final String DEFAULT_HTTP_VERSION = "HTTP/1.1";
 }

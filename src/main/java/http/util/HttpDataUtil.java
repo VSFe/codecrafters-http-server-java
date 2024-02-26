@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import http.HttpRequest;
 import http.HttpResponse;
+import http.Main;
 import http.model.HttpMethod;
 import http.model.HttpStatus;
 
@@ -22,14 +23,20 @@ public class HttpDataUtil {
 
 	public static HttpResponse parseRequestAndCreateResponse(HttpRequest request) {
 		try {
-			if ("/".equals(request.location())) {
+			var location = request.location();
+
+			if ("/".equals(location)) {
 				return HttpResponse.basicOf(HttpStatus.OK);
-			} else if (request.location().startsWith("/echo/")) {
-				var body = request.location().substring(request.location().indexOf("/echo/") + 6);
+			} else if (location.startsWith("/echo/")) {
+				var body = location.substring(location.indexOf("/echo/") + 6);
 				return HttpResponse.basicOf(HttpStatus.OK, body);
-			} else if (request.location().equals("/user-agent")) {
+			} else if (location.equals("/user-agent")) {
 				var body = request.headers().get("User-Agent");
 				return HttpResponse.basicOf(HttpStatus.OK, body);
+			} else if (location.startsWith("/files")) {
+				var fileName = location.substring(location.indexOf("/files/") + 7);
+				var file = FileUtil.readFile(Main.ARGS_MAP.get("directory"), fileName);
+				return HttpResponse.fileOf(file);
 			} else {
 				return HttpResponse.basicOf(HttpStatus.NOT_FOUND);
 			}
